@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# helper script to set the default webbrowser in Linux, which is way more
+# complicated than it should be
+#
+# :author: Elliot Miller
+# :date: 2018-09-12
+#
+
+# settings
+BIN_PATH="$HOME/.local/bin/ejm.firefox"
+BIN_NAME="$(basename $BIN_PATH)"
+
+# use the path provided by the command line args if it exists
+if test $# -eq 1; then
+	BIN_PATH=$1
+
+	if ! test -x $BIN_PATH; then
+		echo "The given path does not exist or is not executable."
+		echo
+		echo "Usage: ejm.setbrowser [<BROWSER CMD>]"
+		exit 1
+	fi
+fi
+
+# configure `update-alternatives`
+if update-alternatives --display x-www-browser >/dev/null 2>&1; then
+	sudo update-alternatives --install /usr/bin/x-www-browser x-www-browser "$BIN_PATH" 100
+	sudo update-alternatives --set x-www-browser "$BIN_PATH"
+fi
+if update-alternatives --display gnome-www-browser >/dev/null 2>&1; then
+	sudo update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser "$BIN_PATH" 100
+	sudo update-alternatives --set gnome-www-browser "$BIN_PATH"
+fi
+
+# configure xdg
+mkdir -p "$HOME/.local/share/applications"
+cat > "$HOME/.local/share/applications/$BIN_NAME.desktop" << EOF
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+NoDisplay=true
+Exec=$BIN_PATH %u
+Name=$BIN_NAME
+MimeType=x-scheme-handler/unknown;x-scheme-handler/about;x-scheme-handler/https;x-scheme-handler/http;text/html;
+EOF
+xdg-desktop-menu install --novendor "$HOME/.local/share/applications/$BIN_NAME.desktop"
+xdg-settings set default-web-browser "$BIN_NAME.desktop"
+xdg-settings check default-web-browser "$BIN_NAME.desktop"

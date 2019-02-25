@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# :author: Elliot Miller
+# :version: 2018-09-30
+#
+
+# setup bash completion; I used the same completion as `exec`
+if ! test -s /etc/bash_completion.d/daemonize; then
+	read -r -p 'Install bash completion? [y/n]' CONFIRM
+	if test "$CONFIRM" = 'y'; then
+		echo 'complete -F _command daemonize' | sudo tee /etc/bash_completion.d/daemonize
+		echo 'Bash completion installed. Run `source /etc/bash_completion` to use.'
+	else
+		echo 'Skipping bash completion installation'
+	fi
+	unset CONFIRM
+fi
+
+# main
+nohup $* >/dev/null 2>&1 &

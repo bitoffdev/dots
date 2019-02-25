@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# goal should be idempotence
+#
+
+# make sure path is correct
+export PATH="$PATH:$HOME/.local/bin"
+
+###############################################################################
+# redshift
+###############################################################################
+redshift -PO 3500
+
+###############################################################################
+# configure monitors for X
+###############################################################################
+
+# turn off any monitors that were disconnected but still configured
+DISCONNECTED=`xrandr | grep -E 'disconnected [0-9]+x[0-9]+' | awk '{ print $1 }'`
+for MONITOR in $DISCONNECTED; do
+	xrandr --output "$MONITOR" --off
+done
+unset DISCONNECTED
+
+# arrange connected monitors for X
+PRIMARY=`xrandr | awk '$3 == "primary" { print $1 }';`
+CONNECTED=`xrandr | awk '$2 == "connected" { print $1 }'`
+PREV_MONITOR=$PRIMARY
+xrandr --output $PRIMARY --auto
+for MONITOR in $CONNECTED; do
+	if ! test "$MONITOR" = "$PRIMARY"; then
+		xrandr --output "$MONITOR" --preferred --right-of "$PREV_MONITOR"
+		PREV_MONITOR=$MONITOR
+	fi
+done
+unset PRIMARY
+unset CONNECTED
+unset PREV_MONITOR
+
+###############################################################################
+# configure monitors for bspwm
+###############################################################################
+
+# remove bspwm monitors that are not connected
+CONNECTED=`xrandr | awk '$2 == "connected" { print $1 }'`
+for MONITOR in $(bspc query -M --names); do
+	if ! test -n "$(echo $CONNECTED | grep $MONITOR)"; then
+		bspc monitor $MONITOR -r
+	fi
+done
+unset CONNECTED
+
+# add any missing bspwm monitors
+# TODO consider using `while` instead of IFS
+IFS=$'\n'
+for line in $(xrandr | grep " connected "); do
+	GEOM=$(echo $line | grep -oE "[0-9]+x[0-9]+\+[0-9]+\+[0-9]+")
+	NAME=$(echo $line | cut -d ' ' -f1)
+	bspc query -M --names | grep "$NAME" >/dev/null ||
+		bspc wm --add-monitor $NAME $GEOM
+done
+unset NAME
+unset GEOM
+unset IFS
+
+# adopt any windows that somehow got orphaned
+bspc wm --adopt-orphans
+
+###############################################################################
+# fix java programs
+###############################################################################
+# https://www.reddit.com/r/bspwm/comments/3a5xuz/java_gui_not_fully_working/
+wmname LG3D
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+###############################################################################
+# start other programs
+###############################################################################
+
+# start hotkey daemon
+pkill sxhkd
+sxhkd &
+
+# start compositor
+compton -b &
+
+# update background image
+$HOME/.fehbg
+
+# start clipboard manager
+
+parcellite &
+
+# kill existing polybars
+pkill polybar
+
+# reset the desktops for each monitor
+COUNT=`bspc query -M --names | wc -l`
+PERMON=10
+if test $COUNT -eq 2; then
+	PERMON=5
+fi
+I=1
+for monitor in $(bspc query -M --names); do
+	seq $I $((I + PERMON - 1)) | xargs bspc monitor $monitor -d
+	polybar $monitor &
+	I=$((I + PERMON))
+done
+
+# start nm-applet
+nm-applet &
+
+# settings
+bspc config click_to_focus "button1"
+bspc config normal_border_color   "#{{base01-hex}}"
+bspc config focused_border_color  "#{{base02-hex}}"
+bspc config presel_feedback_color "#{{base02-hex}}"
+bspc config border_width         2
+bspc config window_gap           2
+
+bspc config split_ratio          0.52
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true

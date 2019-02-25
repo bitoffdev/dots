@@ -1,0 +1,157 @@
+actions:
+  post:
+    reload_compton: bash -lc 'cd $HOME; pkill compton; compton -b &'
+    reload_dunst: bash -lc 'cd $HOME; killall dunst; DISPLAY=:0 dunst &'
+    reload_sxhkd: bash -lc "cd $HOME; pkill sxhkd; sxhkd &"
+    reload_xresources: bash -lc 'cd $HOME; xrdb ~/.Xresources'
+config:
+  backup: true
+  banner: true
+  create: true
+  dotpath: dotfiles
+  ignoreempty: false
+  keepdot: false
+  link_by_default: false
+  longkey: false
+  showdiff: false
+  workdir: ~/.config/dotdrop
+dotfiles:
+  d_bin:
+    dst: ~/bin
+    link: true
+    src: ~/.local/bin
+  f_base16_shell:
+    dst: ~/.local/bin/base16_shell
+    src: local/bin/base16_shell
+    trans: base16
+  f_bash_profile:
+    dst: ~/.bash_profile
+    src: bash_profile
+  f_bashrc:
+    dst: ~/.bashrc
+    src: bashrc
+  f_bin_bspwmrc:
+    dst: ~/.local/bin/bspwmrc
+    link: true
+    src: ~/.config/bspwm/bspwmrc
+  f_bspwmrc:
+    dst: ~/.config/bspwm/bspwmrc
+    src: config/bspwm/bspwmrc
+    trans: base16
+  f_compton.conf:
+    actions:
+    - reload_compton
+    dst: ~/.config/compton.conf
+    src: config/compton.conf
+  f_config:
+    dst: ~/.config/polybar/config
+    src: config/polybar/config
+  f_cryptomount:
+    dst: ~/.local/bin/cryptomount
+    src: local/bin/cryptomount
+  f_daemonize:
+    dst: ~/.local/bin/daemonize
+    src: local/bin/daemonize
+  f_dunstrc:
+    actions:
+    - reload_dunst
+    dst: ~/.config/dunst/dunstrc
+    src: config/dunst/dunstrc
+    trans: base16
+  f_ejm.firefox:
+    dst: ~/.local/bin/ejm.firefox
+    src: local/bin/ejm.firefox
+  f_ejm.setbrowser:
+    dst: ~/.local/bin/ejm.setbrowser
+    src: local/bin/ejm.setbrowser
+  f_ejm.vpn:
+    dst: ~/.local/bin/ejm.vpn
+    src: local/bin/ejm.vpn
+  f_getpublicip:
+    dst: ~/.local/bin/getpublicip
+    src: local/bin/getpublicip
+  f_git_completion:
+    dst: ~/.local/bin/git_completion
+    src: local/bin/git_completion
+  f_gitconfig:
+    dst: ~/.gitconfig
+    src: gitconfig
+  f_index.theme:
+    dst: ~/.icons/default/index.theme
+    src: icons/default/index.theme
+  f_init.vim:
+    dst: ~/.config/nvim/init.vim
+    src: config/nvim/init.vim
+  f_openrct2:
+    dst: ~/.local/bin/openrct2
+    src: /opt/OpenRCT2/openrct2
+    link: true
+  f_resize_font:
+    dst: ~/.urxvt/ext/resize_font
+    src: urxvt/ext/resize_font
+  f_rofi_run:
+    dst: ~/.local/bin/rofi_run
+    src: local/bin/rofi_run
+  f_shellex:
+    dst: ~/.shellex/shellex
+    src: shellex
+  f_sxhkdrc:
+    actions:
+    - reload_sxhkd
+    dst: ~/.config/sxhkd/sxhkdrc
+    src: config/sxhkd/sxhkdrc
+  f_thunderbird:
+    dst: ~/.local/bin/thunderbird
+    src: /opt/thunderbird/thunderbird
+    link: true
+  f_totpqr:
+    dst: ~/.local/bin/totpqr
+    src: local/bin/totpqr
+  f_xinitrc:
+    dst: ~/.xinitrc
+    src: xinitrc
+  f_xresources:
+    actions:
+    - reload_xresources
+    dst: ~/.Xresources
+    src: Xresources
+    trans: base16
+profiles:
+  mckinnon:
+    dotfiles:
+    - f_base16_shell
+    - f_bashrc
+    - f_shellex
+    - f_init.vim
+    - f_compton.conf
+    - f_cryptomount
+    - f_bin_bspwmrc
+    - f_bspwmrc
+    - f_totpqr
+    - f_daemonize
+    - f_ejm.vpn
+    - f_ejm.firefox
+    - f_ejm.setbrowser
+    - f_git_completion
+    - f_getpublicip
+    - f_gitconfig
+    - f_xinitrc
+    - f_resize_font
+    - f_sxhkdrc
+    - f_config
+    - f_dunstrc
+    - f_thunderbird
+    - d_bin
+    - f_openrct2
+    - f_xresources
+    - f_bash_profile
+    - f_index.theme
+  ulti:
+    dotfiles:
+    - f_init.vim
+    - f_daemonize
+    - f_getpublicip
+    - f_gitconfig
+    - f_git_completion
+trans:
+  base16: python3 lib/base16/main.py render google-dark '{0}' > '{1}' && chmod +x '{1}'

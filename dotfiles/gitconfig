@@ -1,0 +1,6 @@
+[user]
+	useConfigOnly = true
+[web]
+	browser = x-www-browser
+[browser "x-www-browser"]
+	cmd = /usr/bin/env x-www-browser

@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+import threading
+import socket
+import os
+import subprocess
+import time
+import logging
+import requests
+from getpass import getpass
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# cryptomator settings
+RELEASES_ENDPOINT = "https://api.github.com/repos/cryptomator/cli/releases"
+CRYPTO_JAR = "/opt/cryptomator-cli.jar"
+
+DAVFS_BIN = "/sbin/mount.davfs"
+JAVA8_BIN = "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java"
+
+VAULT_PATH = "/data/online/ejm-vault"
+
+DAV_HOST = "127.0.0.1"
+DAV_NAME = "cryptodav"
+DAV_MOUNT = "/tmp/cryptomator"
+
+def get_open_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('',0))
+    _, port = s.getsockname()
+    s.close()
+    return port
+
+DAV_PORT = get_open_port()
+
+def cryptomator_check():
+    # check for the cryptomator jar file
+    if os.path.exists(CRYPTO_JAR):
+        logger.info('{} is already installed.'.format(CRYPTO_JAR))
+        return
+
+    # get the url to download
+    cryptomator_jar_url = None
+    response = requests.get(RELEASES_ENDPOINT)
+    rjson = response.json()
+    rjson.sort(key=lambda item: item['created_at'])
+    for release in rjson:
+        for asset in release['assets']:
+            cryptomator_jar_url = asset['browser_download_url']
+            break
+    assert cryptomator_jar_url is not None
+
+    # log information
+    logger.warning('{} is missing.'.format(CRYPTO_JAR))
+    logger.info('Try running: sudo curl -L {} -o {}'.format(cryptomator_jar_url, CRYPTO_JAR))
+
+
+def mount():
+    # wait 5 seconds
+    time.sleep(2.0)
+
+    # create the mount point
+    try:
+        os.makedirs(DAV_MOUNT)
+    except FileExistsError:
+        pass
+
+    # call mount
+    mount_ps = subprocess.Popen([
+        'mount',
+        '-t',
+        'davfs',
+        'http://{}:{}/{}'.format(DAV_HOST, DAV_PORT, DAV_NAME),
+        DAV_MOUNT
+    ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    try:
+        time.sleep(1)
+        stdout, stderr = mount_ps.communicate(input=b'\n\n', timeout=1.0)
+        logger.info(stdout.decode('utf-8'))
+        logger.error(stderr.decode('utf-8'))
+        if mount_ps.poll() != 0 and not 'already mounted' in str(stderr):
+            logger.error('Mount returned a non-zero exit code.')
+            raise SystemExit
+    except subprocess.TimeoutExpired:
+        logger.error('Mount timed out.')
+        mount_ps.kill()
+
+def cryptomator_run():
+
+    password = getpass("Password: ")
+
+    logger.info("Creating WebDAV at http://{}:{}/{}".format(
+        DAV_HOST, DAV_PORT, DAV_NAME))
+
+    crypto_ps = subprocess.Popen([
+        JAVA8_BIN,
+        "-jar",
+        CRYPTO_JAR,
+        "--vault",
+        "{}={}".format(DAV_NAME, VAULT_PATH),
+        "--password",
+        "{}={}".format(DAV_NAME, password),
+        "--bind",
+        DAV_HOST,
+        "--port",
+        str(DAV_PORT)
+    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    # start the mount thread
+    t = threading.Thread(target=mount)
+    t.start()
+
+    # log the output from cryptomator
+    while 1:
+        if crypto_ps.poll() != None:
+            logging.error('Cryptomator exited')
+            raise SystemExit
+        for line in crypto_ps.stdout:
+            logging.info(line.decode('utf-8').strip())
+        time.sleep(0.5)
+
+assert os.path.exists(DAVFS_BIN), \
+    "The Davfs binary is not installed in the expected location.\n" \
+    "Try running apt install davfs2"
+assert os.path.exists(JAVA8_BIN), \
+    "Java 8 is not installed in the expected location.\n" \
+    "Try running apt install openjdk-8-jre"
+
+cryptomator_check()
+cryptomator_run()

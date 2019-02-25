@@ -1,0 +1,82 @@
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+###############################################################################
+# history
+###############################################################################
+HISTCONTROL=ignoredups:ignorespace
+HISTSIZE=1000
+HISTFILESIZE=2000
+shopt -s histappend
+
+###############################################################################
+# virtualenv check
+###############################################################################
+which python3 > /dev/null && python3 << EOF
+import sys
+if hasattr(sys, 'real_prefix'):
+    print('You are in a virtualenv')
+EOF
+
+###############################################################################
+# path and alias
+###############################################################################
+PATH="$PATH:$HOME/.local/bin"
+PATH="$PATH:/var/lib/flatpak/exports/bin"
+PATH="$PATH:/snap/bin"
+PATH="$PATH:$HOME/.rvm/bin"
+export PATH
+
+alias ls='/bin/ls --color=none -F'
+export VISUAL=vim
+
+###############################################################################
+# working directory
+###############################################################################
+# cd "$HOME"
+
+###############################################################################
+# colors
+###############################################################################
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+    alias grep='grep --color=auto'
+
+    source ~/.local/bin/base16_shell
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
+fi
+
+###############################################################################
+# title for xterm and urxvt
+###############################################################################
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+###############################################################################
+# JetBrains
+###############################################################################
+#
+# fixes blank window issue (seen on Debian)
+# https://github.com/swaywm/sway/issues/595
+#
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+###############################################################################
+# completion
+###############################################################################
+if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+    . /etc/bash_completion
+fi
+
+if [ -f $HOME/.local/bin/git_completion ]; then
+    . /$HOME/.local/bin/git_completion
+fi

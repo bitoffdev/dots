@@ -1,0 +1,19 @@
+#
+# shellex configuration - https://github.com/Merovius/shellex
+#
+# Note that shellex uses ZSH, but does not load standard ZSH configuration
+# files like $HOME/.zshrc (until after a command is chosen), so **all
+# configuration should be done in this file**.
+#
+PATH="$PATH:$HOME/.local/bin"
+PATH="$PATH:/var/lib/flatpak/exports/bin"
+PATH="$PATH:/snap/bin"
+PATH="$PATH:$HOME/.rvm/bin"
+export PATH
+
+###############################################################################
+# bash completion for zsh
+###############################################################################
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+source /etc/bash_completion 2>/dev/null

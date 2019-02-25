@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# Automatically connect to the best server through NordVPN
+#
+# .. note:: It only checks US servers right currently. Before running, place
+# the ovpn file in /etc/openvpn/ovpn_tcp.
+#
+# :author: Elliot Miller
+# :modified: 2018-10-08
+#
+CACHEFILE=$HOME/.cache/ejmvpn
+OVPN_TCP_DIR=/etc/openvpn/ovpn_tcp
+mkdir -p `dirname $CACHEFILE`
+
+# verify dependencies
+sudo which openvpn || { echo 'OpenVPN needs to be installed.'; echo 'yeah'; }
+
+# download openvpn config files
+function download_config ()
+{
+	cd /tmp
+	curl -LO https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip
+	unzip ovpn.zip
+	sudo mkdir -p /etc/openvpn
+	sudo cp -r /tmp/ovpn_tcp /etc/openvpn
+}
+
+# ping servers to generate data file
+function generate_helper ()
+{
+	ping -w1 -c1 $1 | grep -o "time=[0-9\.]* ms" | xargs echo $1 
+}
+function generate ()
+{
+	for fname in /etc/openvpn/ovpn_tcp/us*.tcp.ovpn
+	do
+		export -f generate_helper # must be exported for xargs
+		basename $fname | sed "s/\(.*\)\.tcp\.ovpn/\1/" | xargs -n 1 -P 8 -I {} bash -c 'generate_helper "$@"' _ {} | tee -a $CACHEFILE
+		## URL=`basename $fname | sed "s/\(.*\)\.tcp\.ovpn/\1/"`
+		## TIME=`ping -c1 $URL | grep -o "time=[0-9\.]* ms"`
+		## echo $URL $TIME | tee -a $CACHEFILE
+	done
+}
+
+# connect to the server with the lowest ping time
+function connect
+{
+	for T in {1..20}; do
+		URL=`grep "time=$T\." $CACHEFILE | head -n 1 | cut -d ' ' -f1`
+		if test -n "$URL"; then
+			echo $URL.tcp.ovpn
+			sudo openvpn /etc/openvpn/ovpn_tcp/$URL.tcp.ovpn
+			exit 0
+		fi
+	done
+
+	echo "The config file did not have any servers with ping times below 20 ms."
+}
+
+# ensure output is normal if stopped abruptly
+trap 'stty sane' SIGINT SIGTERM
+
+# download openvpn files for NordVPN if they don't exist
+if ! test -d $OVPN_TCP_DIR; then
+	download_config
+fi
+
+# create a file with ping times if one does not exist or is empty
+if ! test -s $CACHEFILE; then
+	generate
+fi
+
+# connect to the nearest vpn
+connect

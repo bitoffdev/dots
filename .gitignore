@@ -1,0 +1,4 @@
+env
+lib/base16/schemes
+__pycache__
+*.pyc

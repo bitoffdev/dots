@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""
+Note that Google Authenticator allows newlines at the end of the url
+in a QR code, but Authy does not
+
+:author: Elliot Miller
+"""
+import qrcode, sys, os
+assert len(sys.argv) == 2
+
+with open(sys.argv[1], 'r') as fh:
+    secret = fh.read().strip().upper()
+    name = os.path.basename(sys.argv[1])
+    url = 'otpauth://totp/{}?secret={}'.format(name, secret)
+    assert not '\n' in url # Authy breaks if there is a newline
+    img = qrcode.make(url)
+    img.show()

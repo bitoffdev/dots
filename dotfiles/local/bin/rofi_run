@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# rofi wrapper based on dmenu_run and dmenu_path
+#
+
+# $XDG_CACHE_HOME defines the base directory relative to which
+# user specific non-essential data files should be stored. If
+# $XDG_CACHE_HOME is either not set or empty, a default equal to
+# $HOME/.cache should be used.
+CACHEDIR=${XDG_CACHE_HOME:-"$HOME/.cache"}
+mkdir -p cachedir
+CACHEFILE=$CACHEDIR/rofi_run
+
+
+# IFS stands for "internal field separator"
+IFS=:
+# if files in $PATH are newer than $CACHEFILE or $CACHEFILE does not exist
+if stest -dqr -n "$CACHEFILE" $PATH; then
+	stest -flx $PATH | sort -u > "$CACHEFILE"
+fi
+
+cat "$CACHEFILE" | rofi -dmenu "$@" | ${SHELL:-"/bin/sh"} &

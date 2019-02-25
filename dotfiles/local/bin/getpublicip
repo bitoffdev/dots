@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import re
+import http.client
+
+class IPSource:
+
+    IPV4_PATTERN = '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}'
+
+    @staticmethod
+    def _request(host, method='GET'):
+        conn = http.client.HTTPConnection(host, 80)
+        conn.request(method, '/')
+        response = conn.getresponse()
+        assert response.status == 200
+        return response.read()
+
+    @classmethod
+    def _is_ipv4(cls, ipaddr):
+        return re.match(cls.IPV4_PATTERN, ipaddr) != None
+
+    @classmethod
+    def request(cls, host, method='GET'):
+        response = cls._request(host)
+        ipv4 = str(response, 'ascii').strip()
+        assert cls._is_ipv4(ipv4)
+        return ipv4
+
+    @classmethod
+    def get(cls):
+        pass
+
+class aws(IPSource):
+    @classmethod
+    def get(cls):
+        return cls.request('checkip.amazonaws.com')
+
+class ifconfig(IPSource):
+    @classmethod
+    def get(cls):
+        return cls.request('ifconfig.me')
+
+class icanhazip(IPSource):
+    @classmethod
+    def get(cls):
+        return cls.request('ipv4.icanhazip.com')
+
+class ident(IPSource):
+    @classmethod
+    def get(cls):
+        return cls.request('v4.ident.me')
+
+if __name__ == '__main__':
+    for source in  IPSource.__subclasses__():
+        try:
+            print(source.get())
+            break
+        except Exception:
+            continue
