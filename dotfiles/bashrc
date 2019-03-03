@@ -1,16 +1,44 @@
-# If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+#
+# ██████╗ ██╗████████╗     ██████╗ ███████╗███████╗
+# ██╔══██╗██║╚══██╔══╝    ██╔═══██╗██╔════╝██╔════╝
+# ██████╔╝██║   ██║       ██║   ██║█████╗  █████╗
+# ██╔══██╗██║   ██║       ██║   ██║██╔══╝  ██╔══╝
+# ██████╔╝██║   ██║       ╚██████╔╝██║     ██║
+# ╚═════╝ ╚═╝   ╚═╝        ╚═════╝ ╚═╝     ╚═╝
+#
+#        ██████╗  ██████╗ ████████╗███████╗
+#        ██╔══██╗██╔═══██╗╚══██╔══╝██╔════╝
+#        ██║  ██║██║   ██║   ██║   ███████╗
+#        ██║  ██║██║   ██║   ██║   ╚════██║
+#        ██████╔╝╚██████╔╝   ██║   ███████║
+#        ╚═════╝  ╚═════╝    ╚═╝   ╚══════╝
+#
+###############################################################################
+# PATH ADDITIONS
+###############################################################################
+EXECUTABLE_DIRS=("$HOME/.local/bin")
+EXECUTABLE_DIRS+=("/snap/bin")
+EXECUTABLE_DIRS+=("/var/lib/flatpak/exports/bin")
+EXECUTABLE_DIRS+=("$HOME/Library/Python/3.7/bin")
+EXECUTABLE_DIRS+=("$HOME/.rvm/bin")
+EXECUTABLE_DIRS+=("$HOME/tools/kafka_2.12-2.1.0/bin")
+
+if ! shopt -oq posix; then
+	for FILE in ${EXECUTABLE_DIRS[@]}; do
+		test -d $FILE && PATH="$PATH:$FILE"
+	done
+fi
+
+unset EXECUTABLE_DIRS
+export PATH
 
 ###############################################################################
-# history
+# INTERACTIVITY CHECKPOINT
 ###############################################################################
-HISTCONTROL=ignoredups:ignorespace
-HISTSIZE=1000
-HISTFILESIZE=2000
-shopt -s histappend
+test -z "$PS1" && return
 
 ###############################################################################
-# virtualenv check
+# VIRTUALENV CHECK
 ###############################################################################
 which python3 > /dev/null && python3 << EOF
 import sys
@@ -19,36 +47,12 @@ if hasattr(sys, 'real_prefix'):
 EOF
 
 ###############################################################################
-# path and alias
+# history
 ###############################################################################
-PATH="$PATH:$HOME/.local/bin"
-PATH="$PATH:/var/lib/flatpak/exports/bin"
-PATH="$PATH:/snap/bin"
-PATH="$PATH:$HOME/.rvm/bin"
-export PATH
-
-alias ls='/bin/ls --color=none -F'
-export VISUAL=vim
-
-###############################################################################
-# working directory
-###############################################################################
-# cd "$HOME"
-
-###############################################################################
-# colors
-###############################################################################
-if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
-    alias grep='grep --color=auto'
-
-    source ~/.local/bin/base16_shell
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
-fi
+HISTCONTROL=ignoredups:ignorespace
+HISTSIZE=1000
+HISTFILESIZE=2000
+shopt -s histappend
 
 ###############################################################################
 # title for xterm and urxvt
@@ -62,21 +66,83 @@ xterm*|rxvt*)
 esac
 
 ###############################################################################
-# JetBrains
+# colors
 ###############################################################################
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+    alias grep='grep --color=auto'
+
+    test -f $HOME/.local/bin/base16_shell && source $HOME/.local/bin/base16_shell
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
+fi
+
+if test "$(uname -s)" = 'Darwin'; then
+	export PS1="\[\e[0;32m\]\u\[\e[0;34m\]@\[\e[0;36m\]\h\[\e[0;37m\]:\[\e[0;37m\]\w\[\e[0;37m\]\n$ \[\e[0m\]"
+fi
+
+###############################################################################
+# bash completion
+###############################################################################
+COMPLETIONS=('/etc/bash_completion' '/usr/local/etc/bash_completion')
+COMPLETIONS+=("$HOME/.local/bin/git_completion")
+COMPLETIONS+=("$HOME/.nvm/bash_completion")
+
+if ! shopt -oq posix; then
+	for FILE in ${COMPLETIONS[@]}; do
+		test -f $FILE && source $FILE
+	done
+fi
+
+###############################################################################
+# ALIASES AND FUNCTIONS
+###############################################################################
+
+export VISUAL=vim
+
+if test "$(uname -s)" = 'Darwin'; then
+	alias sha256sum='shasum -a 256'
+	alias utc='date +%FT%T%Z'
+	alias ls='/bin/ls -F'
+	alias vim=nvim
+else
+	alias ls='/bin/ls --color=none -F'
+fi
+
+fetch() {
+	command git fetch --all --verbose --progress
+}
+
+###############################################################################
+# PROGRAM-SPECIFIC CONFIGURATIONS
+###############################################################################
+if test "$(uname -s)" = 'Darwin'; then
+	export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_152.jdk/Contents/Home
+
+	# Use jshell from openjdk 11, since jshell was introduced in java 9
+	alias jshell=/Library/Java/JavaVirtualMachines/openjdk-11.0.1.jdk/Contents/Home/bin/jshell
+fi
+
 #
-# fixes blank window issue (seen on Debian)
+# fixes JetBrains blank window issue with bspwm (seen on Debian)
 # https://github.com/swaywm/sway/issues/595
 #
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 ###############################################################################
-# completion
+# Node Version Manager Lazy-Loading
 ###############################################################################
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
-fi
+export NVM_DIR="$HOME/.nvm"
 
-if [ -f $HOME/.local/bin/git_completion ]; then
-    . /$HOME/.local/bin/git_completion
-fi
+# get a list of all the globally installed node executables
+NODE_GLOBALS=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
+NODE_GLOBALS+=( 'node' 'nvm' )
+export NODE_GLOBALS
+
+# create bash functions for all node executables to trigger nvm lazy-loading
+for cmd in ${NODE_GLOBALS[@]}; do
+	eval "${cmd}(){ unset -f \"\${NODE_GLOBALS[@]}\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; ${cmd} \$@; }"
+done

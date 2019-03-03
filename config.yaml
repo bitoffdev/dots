@@ -148,10 +148,11 @@ profiles:
     - f_index.theme
   ulti:
     dotfiles:
-    - f_init.vim
+    - f_bashrc
     - f_daemonize
     - f_getpublicip
-    - f_gitconfig
     - f_git_completion
+    - f_gitconfig
+    - f_init.vim
 trans:
   base16: python3 lib/base16/main.py render google-dark '{0}' > '{1}' && chmod +x '{1}'
