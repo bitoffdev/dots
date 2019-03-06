@@ -7,7 +7,7 @@ I use [dotdrop][dotdrop] to manage my dotfiles.
 *Note: Unless stated otherwise, all command listed below should be run in the
 root directory of this repository*
 
-- Install packages listed in  [required packages](#Required packages) below
+- Install packages listed in  [required packages](#required-packages) below
 - Clone this repo into `$HOME/.dots`
 - Install base16 schemes by running `python3 lib/base16/main.py download`
 - Run `dotdrop install` in the root directory of this repo.
@@ -38,13 +38,13 @@ pip3 install --user dotdrop pystache pyyaml
 
 ## Recommendations
 
-APT
+### APT
 
 ```bash
 apt-get install acpi alsa-utils arandr arp-scan curl dnsutils deluge dia evince flatpak git htop libnotify-bin lm-sensors neovim net-tools network-manager-gnome nmap nodejs npm openvpn parcellite pavucontrol pktstat rclone snapd sxiv texlive-full tmux traceroute tree whois vlc wireshark zathura
 ```
 
-Flatpak
+### Flatpak
 
 ```bash
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -52,15 +52,19 @@ flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flath
 flatpak install --user flathub com.discordapp.Discord com.getpostman.Postman com.spotify.Client com.valvesoftware.Steam org.inkscape.Inkscape org.telegram.desktop
 ```
 
-Python
+### OpenRCT
+
+Install [OpenRCT 2][openrct2] to the `/opt/OpenRCT2` directory.
+
+### Python
 
 ```bash
 pip3 install --user flake8 pynvim
 ```
 
-### OpenRCT
+### Slack
 
-Install [OpenRCT 2][openrct2] to the `/opt/OpenRCT2` directory.
+- Sidebar themes: https://slackthemes.net
 
 ### Thunderbird
 
