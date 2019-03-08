@@ -30,6 +30,7 @@ else
 		call dein#add('scrooloose/nerdtree') " better file tree
 		call dein#add('w0rp/ale') " async lint engine
 		call dein#add('sstallion/vim-whitespace') " whitespace highlighting
+		 call dein#add('leafgarland/typescript-vim')
 		call dein#add('Valloric/YouCompleteMe', {'build': 'python3 -m pip install --user --upgrade pynvim && ./install.py'})
 
 		" Required:

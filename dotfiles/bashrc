@@ -137,12 +137,14 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 ###############################################################################
 export NVM_DIR="$HOME/.nvm"
 
-# get a list of all the globally installed node executables
-NODE_GLOBALS=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
-NODE_GLOBALS+=( 'node' 'nvm' )
-export NODE_GLOBALS
+if test -f "$NVM_DIR/versions/node"; then
+	# get a list of all the globally installed node executables
+	NODE_GLOBALS=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
+	NODE_GLOBALS+=( 'node' 'nvm' )
+	export NODE_GLOBALS
 
-# create bash functions for all node executables to trigger nvm lazy-loading
-for cmd in ${NODE_GLOBALS[@]}; do
-	eval "${cmd}(){ unset -f \"\${NODE_GLOBALS[@]}\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; ${cmd} \$@; }"
-done
+	# create bash functions for all node executables to trigger nvm lazy-loading
+	for cmd in ${NODE_GLOBALS[@]}; do
+		eval "${cmd}(){ unset -f \"\${NODE_GLOBALS[@]}\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; ${cmd} \$@; }"
+	done
+fi
