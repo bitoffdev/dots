@@ -38,6 +38,9 @@ dotfiles:
     dst: ~/.config/bspwm/bspwmrc
     src: config/bspwm/bspwmrc
     trans: base16
+  f_com.bitoffdev.redshift.plist:
+    dst: ~/Library/LaunchAgents/com.bitoffdev.redshift.plist
+    src: Library/LaunchAgents/com.bitoffdev.redshift.plist
   f_compton.conf:
     actions:
     - reload_compton
