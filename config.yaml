@@ -89,6 +89,9 @@ dotfiles:
     dst: ~/.local/bin/openrct2
     src: /opt/OpenRCT2/openrct2
     link: true
+  f_redshift.conf:
+    dst: ~/.config/redshift/redshift.conf
+    src: config/redshift/redshift.conf
   f_resize_font:
     dst: ~/.urxvt/ext/resize_font
     src: urxvt/ext/resize_font
@@ -159,6 +162,7 @@ profiles:
     - f_getpublicip
     - f_git_completion
     - f_gitconfig
+    - f_redshift.conf
     - f_vimrc
 trans:
   base16: python3 lib/base16/main.py render google-dark '{0}' > '{1}' && chmod +x '{1}'
