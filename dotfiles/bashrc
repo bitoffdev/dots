@@ -107,7 +107,6 @@ if test "$(uname -s)" = 'Darwin'; then
 	alias sha256sum='shasum -a 256'
 	alias utc='date +%FT%T%Z'
 	alias ls='/bin/ls -F'
-	alias vim=nvim
 else
 	alias ls='/bin/ls --color=none -F'
 fi
@@ -136,15 +135,17 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # Node Version Manager Lazy-Loading
 ###############################################################################
 export NVM_DIR="$HOME/.nvm"
+NODE_GLOBALS=( 'nvm' )
 
 if test -f "$NVM_DIR/versions/node"; then
 	# get a list of all the globally installed node executables
-	NODE_GLOBALS=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
-	NODE_GLOBALS+=( 'node' 'nvm' )
-	export NODE_GLOBALS
-
-	# create bash functions for all node executables to trigger nvm lazy-loading
-	for cmd in ${NODE_GLOBALS[@]}; do
-		eval "${cmd}(){ unset -f \"\${NODE_GLOBALS[@]}\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; ${cmd} \$@; }"
-	done
+	NODE_GLOBALS+=( 'node' )
+	NODE_GLOBALS+=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
 fi
+
+export NODE_GLOBALS
+
+# create bash functions for all node executables to trigger nvm lazy-loading
+for cmd in ${NODE_GLOBALS[@]}; do
+	eval "${cmd}(){ unset -f \"\${NODE_GLOBALS[@]}\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; ${cmd} \$@; }"
+done
