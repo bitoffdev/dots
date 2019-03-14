@@ -30,7 +30,8 @@ else
 		call dein#add('scrooloose/nerdtree') " better file tree
 		call dein#add('w0rp/ale') " async lint engine
 		call dein#add('sstallion/vim-whitespace') " whitespace highlighting
-		 call dein#add('leafgarland/typescript-vim')
+		call dein#add('leafgarland/typescript-vim')
+		call dein#add('shime/vim-livedown', {'build': 'npm install -g livedown'}) " live markdown preview
 		call dein#add('Valloric/YouCompleteMe', {'build': 'python3 -m pip install --user --upgrade pynvim && ./install.py'})
 
 		" Required:
@@ -75,6 +76,9 @@ set cursorline
 " allow per-file vim settings
 setlocal modeline
 
+" use backspace intuitively
+set backspace=indent,eol,start
+
 " Number the lines in the file picker
 " Setting variable from /usr/share/vim/vim74/autoload/netrw.vim
 let g:netrw_bufsettings = "noma nomod nonu nobl nowrap ro rnu"
@@ -85,6 +89,9 @@ let g:netrw_bufsettings = "noma nomod nonu nobl nowrap ro rnu"
 if &term =~ '256color'
 	set t_ut=
 endif
+
+" required by YouCompleteMe
+set encoding=utf-8
 
 " required by sstallion/vim-whitespace to prevent error
 hi! link ExtraWhitespace ErrorMsg

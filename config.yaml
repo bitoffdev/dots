@@ -110,6 +110,9 @@ dotfiles:
   f_totpqr:
     dst: ~/.local/bin/totpqr
     src: local/bin/totpqr
+  f_vimrc:
+    dst: ~/.vimrc
+    src: config/nvim/init.vim
   f_xinitrc:
     dst: ~/.xinitrc
     src: xinitrc
@@ -156,6 +159,6 @@ profiles:
     - f_getpublicip
     - f_git_completion
     - f_gitconfig
-    - f_init.vim
+    - f_vimrc
 trans:
   base16: python3 lib/base16/main.py render google-dark '{0}' > '{1}' && chmod +x '{1}'
