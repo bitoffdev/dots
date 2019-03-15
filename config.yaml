@@ -70,6 +70,9 @@ dotfiles:
   f_ejm.vpn:
     dst: ~/.local/bin/ejm.vpn
     src: local/bin/ejm.vpn
+  f_fly_completion:
+    dst: ~/.local/bin/fly_completion
+    src: local/bin/fly_completion
   f_getpublicip:
     dst: ~/.local/bin/getpublicip
     src: local/bin/getpublicip
@@ -164,5 +167,6 @@ profiles:
     - f_gitconfig
     - f_redshift.conf
     - f_vimrc
+    - f_fly_completion
 trans:
   base16: python3 lib/base16/main.py render google-dark '{0}' > '{1}' && chmod +x '{1}'

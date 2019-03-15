@@ -88,6 +88,7 @@ fi
 # bash completion
 ###############################################################################
 COMPLETIONS=('/etc/bash_completion' '/usr/local/etc/bash_completion')
+COMPLETIONS+=("$HOME/.local/bin/fly_completion")
 COMPLETIONS+=("$HOME/.local/bin/git_completion")
 COMPLETIONS+=("$HOME/.nvm/bash_completion")
 
