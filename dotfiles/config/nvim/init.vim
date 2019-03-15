@@ -99,6 +99,9 @@ hi! link ExtraWhitespace ErrorMsg
 " vimtex settings; make sure zathura is installed
 let g:vimtex_view_general_viewer = 'zathura'
 
+" open NERDTree if no file was specified
+au vimenter * if !argc() | NERDTree | endif
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " recognize extra filetypes
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
