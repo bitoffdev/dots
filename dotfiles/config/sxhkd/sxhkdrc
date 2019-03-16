@@ -20,7 +20,7 @@ super + Escape
 
 # lock the screen
 super + slash
-	dm-tool lock
+	dm-tool switch-to-greeter
 
 #
 # bspwm hotkeys
