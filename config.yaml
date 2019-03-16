@@ -4,6 +4,7 @@ actions:
     reload_dunst: bash -lc 'cd $HOME; killall dunst; DISPLAY=:0 dunst &'
     reload_sxhkd: bash -lc "cd $HOME; pkill sxhkd; sxhkd &"
     reload_xresources: bash -lc 'cd $HOME; xrdb ~/.Xresources'
+    reload_polybar: killall -s SIGUSR1 polybar
 config:
   backup: true
   banner: true
@@ -49,6 +50,8 @@ dotfiles:
   f_config:
     dst: ~/.config/polybar/config
     src: config/polybar/config
+    actions:
+    - reload_polybar
   f_cryptomount:
     dst: ~/.local/bin/cryptomount
     src: local/bin/cryptomount
