@@ -6,11 +6,11 @@
 # the ovpn file in /etc/openvpn/ovpn_tcp.
 #
 # :author: Elliot Miller
-# :modified: 2018-10-08
+# :modified: 2019-04-07
 #
-CACHEFILE=$HOME/.cache/ejmvpn
+cachefile=$HOME/.cache/ejmvpn
 OVPN_TCP_DIR=/etc/openvpn/ovpn_tcp
-mkdir -p `dirname $CACHEFILE`
+mkdir -p `dirname $cachefile`
 
 # verify dependencies
 sudo which openvpn || { echo 'OpenVPN needs to be installed.'; echo 'yeah'; }
@@ -28,25 +28,23 @@ function download_config ()
 # ping servers to generate data file
 function generate_helper ()
 {
-	ping -w1 -c1 $1 | grep -o "time=[0-9\.]* ms" | xargs echo $1 
+	ping -w1 -c1 $1 | grep -o "time=[0-9\.]* ms" | while read ms; do echo $1 $ms; done
 }
 function generate ()
 {
-	for fname in /etc/openvpn/ovpn_tcp/us*.tcp.ovpn
-	do
-		export -f generate_helper # must be exported for xargs
-		basename $fname | sed "s/\(.*\)\.tcp\.ovpn/\1/" | xargs -n 1 -P 8 -I {} bash -c 'generate_helper "$@"' _ {} | tee -a $CACHEFILE
-		## URL=`basename $fname | sed "s/\(.*\)\.tcp\.ovpn/\1/"`
-		## TIME=`ping -c1 $URL | grep -o "time=[0-9\.]* ms"`
-		## echo $URL $TIME | tee -a $CACHEFILE
-	done
+	export -f generate_helper # must be exported for xargs
+
+	ls /etc/openvpn/ovpn_tcp/us*.tcp.ovpn \
+		| xargs -n1 -I {} bash -c 'basename "$@" | sed "s/\(.*\)\.tcp\.ovpn/\1/"' _ {} \
+		| xargs -P6 -n1 -I {} bash -c 'generate_helper "$@"' _ {} 2>/dev/null \
+		| tee -a $cachefile
 }
 
 # connect to the server with the lowest ping time
 function connect
 {
-	for T in {1..20}; do
-		URL=`grep "time=$T\." $CACHEFILE | head -n 1 | cut -d ' ' -f1`
+	for T in {1..40}; do
+		URL=`grep "time=$T\." $cachefile | head -n 1 | cut -d ' ' -f1`
 		if test -n "$URL"; then
 			echo $URL.tcp.ovpn
 			sudo openvpn /etc/openvpn/ovpn_tcp/$URL.tcp.ovpn
@@ -57,16 +55,24 @@ function connect
 	echo "The config file did not have any servers with ping times below 20 ms."
 }
 
-# ensure output is normal if stopped abruptly
-trap 'stty sane' SIGINT SIGTERM
+function cleanup ()
+{
+	# ensure output is normal if stopped abruptly
+	stty dec sane
+
+	# exit
+	exit 0
+}
+trap cleanup SIGINT SIGTERM
 
 # download openvpn files for NordVPN if they don't exist
 if ! test -d $OVPN_TCP_DIR; then
 	download_config
 fi
 
-# create a file with ping times if one does not exist or is empty
-if ! test -s $CACHEFILE; then
+# create a file with ping times if one does not exist, is empty, or if --ping
+# flag is present
+if test ! -s "$cachefile" -o "$1" = "--ping"; then
 	generate
 fi
 
