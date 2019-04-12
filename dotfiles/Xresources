@@ -61,7 +61,7 @@ URxvt.keysym.Shift-Control-V: eval:paste_clipboard
 URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
 
 URxvt*perl-lib: /usr/lib/urxvt/perl/
-URxvt*perl-ext-common: default,matcher,resize-font
+URxvt*perl-ext-common: default,matcher,resize_font
 URxvt*urlLauncher: /usr/bin/x-www-browser
 URxvt*matcher.button: 1
 
