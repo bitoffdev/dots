@@ -73,11 +73,14 @@ package from APT and other package managers tends to be out of date.
 
 **Add-ons**
 
-- DKIM verifier
+- [DKIM verifier][dkimverifier]
+- [Expression Search][expressionsearch]
 - [Monterail Dark][monteraildark] by [Emanuele Concas][conema]
 
 [conema]: https://github.com/conema
+[dkimverifier]: https://addons.thunderbird.net/en-US/thunderbird/addon/dkim-verifier
 [dotdrop]: https://github.com/deadc0de6/dotdrop
+[expressionsearch]: https://addons.thunderbird.net/en-US/thunderbird/addon/gmailui/
 [monterail]: https://addons.thunderbird.net/en-US/thunderbird/collections/conema/monterail-themes/
 [monteraildark]: https://addons.thunderbird.net/en-US/thunderbird/addon/monterail-dark
 [openrct2]: https://openrct2.org/
