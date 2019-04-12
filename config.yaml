@@ -112,6 +112,10 @@ dotfiles:
     - reload_sxhkd
     dst: ~/.config/sxhkd/sxhkdrc
     src: config/sxhkd/sxhkdrc
+  f_terminot:
+    dst: ~/.local/bin/terminot
+    src: local/bin/terminot
+    link: true
   f_thunderbird:
     dst: ~/.local/bin/thunderbird
     src: /opt/thunderbird/thunderbird
@@ -155,6 +159,7 @@ profiles:
     - f_sxhkdrc
     - f_config
     - f_dunstrc
+    - f_terminot
     - f_thunderbird
     - d_bin
     - f_openrct2
