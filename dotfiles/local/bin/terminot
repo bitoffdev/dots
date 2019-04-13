@@ -1,23 +1,47 @@
-#!/usr/bin/env python2
-"""
+#!/usr/bin/env python
+r"""
  ______              _           __
 /_  __/__ ______ _  (_)__  ___  / /_
  / / / -_) __/  ' \/ / _ \/ _ \/ __/
-/_/  \__/_/ /_/_/_/_/_//_/\___/\__/ 
+/_/  \__/_/ /_/_/_/_/_//_/\___/\__/
 
 Terminal notifications from D-Bus to stdout
 """
 from __future__ import print_function
 import os
-import dbus
-import dbus.service
-import dbus.mainloop.glib
-import gobject
 from itertools import count
-import signal
 import logging
-logger = logging.getLogger(__name__)
+import signal
+from sys import version_info as version
+
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+print(__doc__)
+logger.info("Using Python version %d.%d", version[0], version[1])
+
+
+try:
+    import dbus
+    import dbus.service
+    import dbus.mainloop.glib
+except ImportError as err:
+    logger.error("Missing dbus-python. "
+                 "See https://dbus.freedesktop.org/doc/dbus-python/")
+    raise err
+
+try:
+    # python 2
+    from gobject import MainLoop
+except ImportError:
+    # python 3
+    from gi.repository.GLib import MainLoop
+except ImportError as err:
+    logger.error("Missing pygobject. Try pip install --user pygobject.")
+    raise err
+
+
+BUSNAME = "org.freedesktop.Notifications"
 
 
 class Terminot(dbus.service.Object):
@@ -28,8 +52,7 @@ class Terminot(dbus.service.Object):
         self.counter = count(start=1)
         super(Terminot, self).__init__(*args, **kwargs)
 
-    @dbus.service.method("org.freedesktop.Notifications", in_signature='',
-                         out_signature='as')
+    @dbus.service.method(BUSNAME, in_signature='', out_signature='as')
     def GetCapabilities(self):
         """
         lie and say that we support everything
@@ -38,8 +61,7 @@ class Terminot(dbus.service.Object):
                 "body-images", "body-markup", "icon-multi", "icon-static",
                 "persistence", "sound")
 
-    @dbus.service.method("org.freedesktop.Notifications",
-                         in_signature='susssasa{ss}i',
+    @dbus.service.method(BUSNAME, in_signature='susssasa{ss}i',
                          out_signature='u')
     def Notify(self, app_name, replaces_id, app_icon,
                summary, body, actions, hints, expire_timeout):
@@ -48,17 +70,15 @@ class Terminot(dbus.service.Object):
                     summary, body)
         return replaces_id
 
-    @dbus.service.signal('org.freedesktop.Notifications', signature='uu')
+    @dbus.service.signal(BUSNAME, signature='uu')
     def NotificationClosed(self, id_in, reason_in):
         pass
 
-    @dbus.service.method("org.freedesktop.Notifications", in_signature='u',
-                         out_signature='')
+    @dbus.service.method(BUSNAME, in_signature='u', out_signature='')
     def CloseNotification(self, id):
         pass
 
-    @dbus.service.method("org.freedesktop.Notifications", in_signature='',
-                         out_signature='ssss')
+    @dbus.service.method(BUSNAME, in_signature='', out_signature='ssss')
     def GetServerInformation(self):
         return ("terminot", "https://www.bitoffdev.com", "1.0.0", "1")
 
@@ -69,33 +89,44 @@ def kill_server():
     """
     bus = dbus.SessionBus()
     obj = bus.get_object('org.freedesktop.DBus', '/')
-    pid = obj.GetConnectionUnixProcessID('org.freedesktop.Notifications')
+    pid = obj.GetConnectionUnixProcessID(BUSNAME)
+
+    if pid == os.getpid():
+        logger.warn("Skipping request for self-death")
+        return
+
     os.kill(pid, signal.SIGTERM)
-    logger.info("Killed pid %s", pid)
+    logger.info("Sent SIGTERM to pid %s", pid)
 
 
 def aquire_busname(bus):
     """
-    name is global so that it does not get garbage collected
+    Aquire the D-Bus BusName org.freedesktop.Notifications.
+
+    :param bus: D-Bus SessionBus
+    :returns: None
+
+    ..note:: only one application can own this BusName at any time
     """
+    # `name` is global so that it is not garbage collected when this function
+    # returns. As soon as `name` is garbage collected, another application can
+    # seize the D-Bus BusName org.freedesktop.Notifications.
     global name
-    name = dbus.service.BusName("org.freedesktop.Notifications", bus)
+    name = dbus.service.BusName(BUSNAME, bus)
     uname = bus.get_unique_name()
-    owner = bus.activate_name_owner('org.freedesktop.Notifications')
+    owner = bus.activate_name_owner(BUSNAME)
 
     while uname != owner:
+        logger.warn("Another process owns the BusName %s", BUSNAME)
         kill_server()
-        owner = bus.activate_name_owner('org.freedesktop.Notifications')
+        owner = bus.activate_name_owner(BUSNAME)
 
-    logger.info("Aquired busname")
-
-    return name
+    logger.info("Aquired BusName=%s", BUSNAME)
 
 
 def main():
-    print(__doc__)
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    loop = gobject.MainLoop()
+    loop = MainLoop()
     bus = dbus.SessionBus()
     aquire_busname(bus)
     Terminot(bus, '/org/freedesktop/Notifications')
