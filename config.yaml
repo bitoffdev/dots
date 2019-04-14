@@ -85,6 +85,9 @@ dotfiles:
   f_gitconfig:
     dst: ~/.gitconfig
     src: gitconfig
+  f_git_sherlock:
+    dst: "{{@@ gitcore @@}}/git-sherlock"
+    src: local/bin/git-sherlock
   f_index.theme:
     dst: ~/.icons/default/index.theme
     src: icons/default/index.theme
@@ -135,6 +138,8 @@ dotfiles:
     dst: ~/.Xresources
     src: Xresources
     trans: base16
+dynvariables:
+  gitcore: git --exec-path
 profiles:
   mckinnon:
     dotfiles:
@@ -154,6 +159,7 @@ profiles:
     - f_git_completion
     - f_getpublicip
     - f_gitconfig
+    - f_git_sherlock
     - f_xinitrc
     - f_resize_font
     - f_sxhkdrc
