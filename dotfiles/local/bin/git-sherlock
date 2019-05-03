@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+git fsck --lost-found --no-progress | cut -d' ' -f3 | xargs git log --graph --all --date=short --pretty='format:%C(yellow)%h %Cblue%ad %Cgreen%aN%Cred%d %Creset%s'
