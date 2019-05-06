@@ -73,6 +73,9 @@ dotfiles:
   f_ejm.vpn:
     dst: ~/.local/bin/ejm.vpn
     src: local/bin/ejm.vpn
+  f_fehbg:
+    dst: ~/.fehbg
+    src: fehbg
   f_fly_completion:
     dst: ~/.local/bin/fly_completion
     src: local/bin/fly_completion

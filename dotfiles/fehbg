@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# /usr/share/backgrounds is the agreed-upon location for storing background images
+#
+# On Debian, you can install one of the background packages such as
+# `gnome-backgrounds` or `mate-backgrounds`.
+#
+find /usr/share/backgrounds -name '*.jpg' | shuf | head -n1 | xargs feh --bg-fill --no-fehbg
