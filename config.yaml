@@ -5,6 +5,7 @@ actions:
     reload_sxhkd: bash -lc "cd $HOME; pkill sxhkd; sxhkd &"
     reload_xresources: bash -lc 'cd $HOME; xrdb ~/.Xresources'
     reload_polybar: killall -s SIGUSR1 polybar
+    reload_tmux: tmux source-file ~/.tmux.conf
 config:
   backup: true
   banner: true
@@ -126,6 +127,11 @@ dotfiles:
     dst: ~/.local/bin/thunderbird
     src: /opt/thunderbird/thunderbird
     link: true
+  f_tmux.conf:
+    dst: ~/.tmux.conf
+    src: tmux.conf
+    actions:
+      - reload_tmux
   f_totpqr:
     dst: ~/.local/bin/totpqr
     src: local/bin/totpqr
@@ -175,6 +181,7 @@ profiles:
     - f_xresources
     - f_bash_profile
     - f_index.theme
+    - f_tmux.conf
   ulti:
     dotfiles:
     - f_bashrc
