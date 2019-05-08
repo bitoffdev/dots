@@ -31,6 +31,7 @@ else
 		call dein#add('w0rp/ale') " async lint engine
 		call dein#add('sstallion/vim-whitespace') " whitespace highlighting
 		call dein#add('leafgarland/typescript-vim')
+		call dein#add('tpope/vim-sleuth') " Heuristically set buffer options
 		call dein#add('shime/vim-livedown', {'build': 'npm install -g livedown'}) " live markdown preview
 		call dein#add('Valloric/YouCompleteMe', {'build': 'python3 -m pip install --user --upgrade pynvim && ./install.py'})
 
@@ -41,7 +42,7 @@ else
 
 	" check for uninstalled plugins on startup.
 	if dein#check_install()
-		echo "You have uninstalled plugins. Run dein#install()"
+		echo "You have uninstalled plugins. Run :call dein#install()."
 		echo
 	endif
 endif
