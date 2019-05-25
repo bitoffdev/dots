@@ -31,7 +31,6 @@ alert = #bd2c40
 [bar/LVDS1]
 inherit = bar/example
 monitor = LVDS1
-modules-right = filesystem xbacklight alsa pulseaudio xkeyboard memory cpu wlan eth battery temperature date powermenu
 
 ; as named by generic modesetting driver
 [bar/eDP-1]
@@ -42,7 +41,6 @@ monitor = eDP-1
 [bar/eDP1]
 inherit = bar/example
 monitor = eDP1
-modules-right = filesystem xbacklight alsa pulseaudio xkeyboard memory cpu wlan eth battery temperature date powermenu
 
 [bar/DP1]
 inherit = bar/example
@@ -92,7 +90,8 @@ font-3 = "Wuncon Siji:pixelsize=10;1"
 
 modules-left = bspwm
 # modules-center = mpd
-modules-right = filesystem alsa pulseaudio xkeyboard memory cpu wlan eth battery temperature date powermenu
+# modules-right = filesystem alsa pulseaudio xkeyboard memory cpu wlan eth battery temperature date powermenu
+modules-right = filesystem xbacklight alsa pulseaudio xkeyboard memory cpu wlan eth battery battery1 temperature date powermenu
 
 tray-offset-x = -${self.radius}
 ; If true, the bar will not shift its
@@ -392,10 +391,14 @@ animation-charging-foreground = ${colors.foreground-alt}
 animation-charging-framerate = 750
 
 animation-discharging-0 = 
-animation-discharging-1 = 
-animation-discharging-2 = 
+animation-discharging-1 = 
+animation-discharging-2 = 
 animation-discharging-foreground = ${colors.foreground-alt}
 animation-discharging-framerate = 750
+
+[module/battery1]
+inherit = module/battery
+battery = BAT1
 
 [module/temperature]
 type = internal/temperature
