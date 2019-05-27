@@ -7,6 +7,31 @@
 export PATH="$PATH:$HOME/.local/bin"
 
 ###############################################################################
+# settings
+###############################################################################
+total_desktops=8
+
+###############################################################################
+# parse command line arguments
+###############################################################################
+verbose=0
+
+while getopts "h?v" opt; do
+    case "$opt" in
+    h|\?)
+	echo 'This script configures my desktop environment'
+        exit 0
+        ;;
+    v)  verbose=1
+        ;;
+    esac
+done
+
+is_verbose() {
+	test $verbose -eq 1 && return 0 || return 1
+}
+
+###############################################################################
 # redshift
 ###############################################################################
 redshift -PO 3500
@@ -21,6 +46,9 @@ xset r rate 250 60
 # configure monitors for X
 ###############################################################################
 
+# get the current state of bspwm
+WMSTATE=`bspc wm --dump-state`
+
 # turn off any monitors that were disconnected but still configured
 DISCONNECTED=`xrandr | grep -E 'disconnected [0-9]+x[0-9]+' | awk '{ print $1 }'`
 for MONITOR in $DISCONNECTED; do
@@ -28,6 +56,7 @@ for MONITOR in $DISCONNECTED; do
 done
 unset DISCONNECTED
 
+# TODO honor existing direction
 # arrange connected monitors for X
 PRIMARY=`xrandr | awk '$3 == "primary" { print $1 }';`
 CONNECTED=`xrandr | awk '$2 == "connected" { print $1 }'`
@@ -69,14 +98,65 @@ unset NAME
 unset GEOM
 unset IFS
 
+###############################################################################
+# configure desktops for bspwm
+###############################################################################
+#
+# STEP ONE: calculate the number of desktops to place on each monitor
+#
+
+monitor_count=`bspc query -M --names | wc -l`
+quotient=$(($total_desktops / $monitor_count))
+remainder=$(( $total_desktops % $monitor_count ))
+
+desktops_per_monitor=()
+for i in $(seq 1 $monitor_count); do
+	test $i -gt $remainder \
+		&& desktops_per_monitor+=($quotient) \
+		|| desktops_per_monitor+=($(( $quotient + 1 )))
+done
+
+is_verbose && echo "Desktops per each monitor: ${desktops_per_monitor[@]}" 1>&2
+
+#
+# STEP TWO: move existing desktops
+#
+desktop_index=1
+# for (( i=0; i<$monitor_count; i++ )); do
+for i in $(seq 1 $monitor_count); do
+	local_desktops=${desktops_per_monitor[$((i - 1))]}
+	for j in $(seq 1 $local_desktops); do
+		is_verbose && echo "Moving desktop $desktop_index to monitor $i"
+		# caret indicates the nth monitor, rather than selecting by
+		# name
+		bspc desktop $desktop_index --to-monitor ^$i
+		desktop_index=$(($desktop_index + 1))
+	done
+done
+
+#
+# STEP THREE: reset desktops to remove extras
+#
+desktop_index=1
+# for i in $(seq 1 $monitor_count); do
+# for (( i=0; i<$monitor_count; i++ )); do
+for i in $(seq 1 $monitor_count); do
+	local_desktops=${desktops_per_monitor[$((i - 1))]}
+	upper=$((desktop_index + local_desktops - 1))
+	is_verbose && echo "Resetting desktops on monitor $i to {$desktop_index..$upper}"
+	seq $desktop_index $upper | xargs bspc monitor ^$i -d
+	desktop_index=$((upper + 1))
+done
+
 # adopt any windows that somehow got orphaned
+is_verbose && echo 'Adopting orphaned X windows to be managed by bspwm'
 bspc wm --adopt-orphans
 
 ###############################################################################
 # fix java programs
 ###############################################################################
 # https://www.reddit.com/r/bspwm/comments/3a5xuz/java_gui_not_fully_working/
-wmname LG3D
+which wmname >/dev/null && wmname LG3D
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 ###############################################################################
