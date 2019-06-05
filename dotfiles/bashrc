@@ -49,10 +49,21 @@ EOF
 ###############################################################################
 # history
 ###############################################################################
-HISTCONTROL=ignoredups:ignorespace
+# HISTSIZE is the number of lines **stored in memory**
 HISTSIZE=1000
-HISTFILESIZE=2000
+# HISTFILESIZE is the number of lines **written to file**
+HISTFILESIZE=10000
+# append to the history file instead of overwritting
 shopt -s histappend
+# do not record duplicates in history
+HISTCONTROL=ignoredups
+# do not record history for the following commands
+HISTIGNORE='pwd:ls:bg:fg:history'
+# record a timestamp with the history
+HISTTIMEFORMAT='%F %T '
+# write to history file before each command
+# PROMPT_COMMAND is executed before each printing of each primary prompt ($PS1)
+PROMPT_COMMAND="history -a;history -n;$PROMPT_COMMAND"
 
 ###############################################################################
 # title for xterm and urxvt
