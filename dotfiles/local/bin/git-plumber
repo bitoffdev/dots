@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""
+Recursively search for git directories within the given basedir. For each git
+directory, minimize the number of files by packing objects and removing hooks
+and extra information.
+"""
+import argparse
+import os
+import subprocess
+
+TIMEOUT = 30
+
+
+def is_repo(path):
+    with open(os.devnull, 'w') as fh:
+        ps = subprocess.Popen(['git', 'rev-parse', '--resolve-git-dir', path],
+                              cwd=path, stdout=subprocess.PIPE, stderr=fh)
+        stdout, _ = ps.communicate(timeout=TIMEOUT)
+        return path == str(stdout.strip(), 'utf-8')
+
+
+def clean_repo(path, remove_hooks=False):
+    if not is_repo(path):
+        return
+
+    print("Cleaning repo: {}".format(path))
+
+    ps = subprocess.Popen(['git', 'repack', '-ad'], cwd=path)
+    assert ps.wait(timeout=TIMEOUT) == 0
+
+    ps = subprocess.Popen(['git', 'prune-packed'], cwd=path)
+    assert ps.wait(timeout=TIMEOUT) == 0
+
+    ps = subprocess.Popen(['git', 'count-objects', '-v'], cwd=path)
+    assert ps.wait(timeout=TIMEOUT) == 0
+
+    if remove_hooks:
+        ps = subprocess.Popen(['rm', '-rf', 'hooks'], cwd=path)
+        ps.wait(timeout=5)
+
+    ps = subprocess.Popen(['rm', '-rf', 'info'], cwd=path)
+    ps.wait(timeout=5)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('basedir', type=str,
+                        help='directory to search within')
+    parser.add_argument('--remove-hooks', action='store_true',
+                        help='Remove all hooks from git dir',
+                        default=False)
+    args = parser.parse_args()
+    for path, _, _ in os.walk(args.basedir):
+        clean_repo(path, remove_hooks=args.remove_hooks)
+
+
+if __name__ == "__main__":
+    main()
