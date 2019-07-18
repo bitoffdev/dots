@@ -2,10 +2,10 @@ actions:
   post:
     reload_compton: bash -lc 'cd $HOME; pkill compton; compton -b &'
     reload_dunst: bash -lc 'cd $HOME; killall dunst; DISPLAY=:0 dunst &'
-    reload_sxhkd: bash -lc "cd $HOME; pkill sxhkd; sxhkd &"
-    reload_xresources: bash -lc 'cd $HOME; xrdb ~/.Xresources'
     reload_polybar: killall -s SIGUSR1 polybar
+    reload_sxhkd: killall -s SIGUSR1 sxhkd
     reload_tmux: tmux source-file ~/.tmux.conf
+    reload_xresources: bash -lc 'cd $HOME; xrdb ~/.Xresources'
 config:
   backup: false
   banner: true
@@ -14,13 +14,15 @@ config:
   ignoreempty: false
   keepdot: false
   link_by_default: false
+  link_dotfile_default: nolink
+  link_on_import: nolink
   longkey: false
   showdiff: false
   workdir: ~/.config/dotdrop
 dotfiles:
   d_bin:
     dst: ~/bin
-    link: true
+    link: link
     src: ~/.local/bin
   f_base16_shell:
     dst: ~/.local/bin/base16_shell
@@ -34,7 +36,7 @@ dotfiles:
     src: bashrc
   f_bin_bspwmrc:
     dst: ~/.local/bin/bspwmrc
-    link: true
+    link: link
     src: ~/.config/bspwm/bspwmrc
   f_bspwmrc:
     dst: ~/.config/bspwm/bspwmrc
@@ -49,10 +51,10 @@ dotfiles:
     dst: ~/.config/compton.conf
     src: config/compton.conf
   f_config:
-    dst: ~/.config/polybar/config
-    src: config/polybar/config
     actions:
     - reload_polybar
+    dst: ~/.config/polybar/config
+    src: config/polybar/config
   f_cryptomount:
     dst: ~/.local/bin/cryptomount
     src: local/bin/cryptomount
@@ -103,8 +105,8 @@ dotfiles:
     src: config/nvim/init.vim
   f_openrct2:
     dst: ~/.local/bin/openrct2
+    link: link
     src: /opt/OpenRCT2/openrct2
-    link: true
   f_redshift.conf:
     dst: ~/.config/redshift/redshift.conf
     src: config/redshift/redshift.conf
@@ -124,12 +126,12 @@ dotfiles:
     src: config/sxhkd/sxhkdrc
   f_terminot:
     dst: ~/.local/bin/terminot
+    link: link
     src: local/bin/terminot
-    link: true
   f_thunderbird:
     dst: ~/.local/bin/thunderbird
+    link: link
     src: /opt/thunderbird/thunderbird
-    link: true
   f_tmux.conf:
     dst: ~/.tmux.conf
     src: tmux.conf
@@ -185,6 +187,7 @@ profiles:
     - f_xresources
     - f_bash_profile
     - f_index.theme
+    - f_fehbg
     - f_tmux.conf
   ulti:
     dotfiles:
