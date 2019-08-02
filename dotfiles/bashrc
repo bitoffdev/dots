@@ -13,6 +13,11 @@
 #        ██████╔╝╚██████╔╝   ██║   ███████║
 #        ╚═════╝  ╚═════╝    ╚═╝   ╚══════╝
 #
+# notes:
+#   - Do not use the '@' sign for bash array dereferencing. Instead use the
+#     asterisk.
+#
+log_debug() { echo "$(date --rfc-3339=seconds) $1"; }
 ###############################################################################
 # PATH ADDITIONS
 ###############################################################################
@@ -21,7 +26,6 @@ EXECUTABLE_DIRS+=("/snap/bin")
 EXECUTABLE_DIRS+=("/var/lib/flatpak/exports/bin")
 EXECUTABLE_DIRS+=("$HOME/Library/Python/3.7/bin")
 EXECUTABLE_DIRS+=("$HOME/.rvm/bin")
-EXECUTABLE_DIRS+=("$HOME/tools/kafka_2.12-2.1.0/bin")
 
 if ! shopt -oq posix; then
 	for FILE in ${EXECUTABLE_DIRS[@]}; do
@@ -143,17 +147,29 @@ fi
 #
 export _JAVA_AWT_WM_NONREPARENTING=1
 
+#
+# pyenv
+#
+export PYENV_ROOT="/opt/pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
 ###############################################################################
 # Node Version Manager Lazy-Loading
 ###############################################################################
+log_debug 'starting nvm lazy-loader'
 export NVM_DIR="$HOME/.nvm"
 NODE_GLOBALS=( 'nvm' )
 
-if test -f "$NVM_DIR/versions/node"; then
+if test -d "$NVM_DIR/versions/node"; then
+	log_debug 'found at least one node installation in nvm dir'
 	# get a list of all the globally installed node executables
 	NODE_GLOBALS+=( 'node' )
 	NODE_GLOBALS+=( $(find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq) )
 fi
+
+log_debug "found node globals: ${NODE_GLOBALS[*]}"
 
 export NODE_GLOBALS
 
