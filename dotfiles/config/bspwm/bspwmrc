@@ -28,6 +28,17 @@
 # make sure path includes the local bin for this user
 export PATH="$PATH:$HOME/.local/bin"
 
+# always run in the home directory of the user
+cd $HOME
+
+# unset some variables we don't want
+# TODO perhaps a better way? -- maybe rewrite sxhkdrc to start all processes
+# with default variables or something
+#
+# if set, this will be passed through to children of sxhkd, which is not
+# desired
+unset TMUX
+
 ###############################################################################
 # settings
 ###############################################################################
@@ -39,14 +50,14 @@ total_desktops=12
 verbose=0
 
 while getopts "h?v" opt; do
-    case "$opt" in
-    h|\?)
-	echo 'This script configures my desktop environment'
-        exit 0
-        ;;
-    v)  verbose=1
-        ;;
-    esac
+	case "$opt" in
+	h|\?)
+		echo 'This script configures my desktop environment'
+		exit 0
+		;;
+	v)  verbose=1
+	;;
+	esac
 done
 
 is_verbose() {
@@ -76,7 +87,7 @@ eval_and_log() {
 
 # write monitor names, one per line, to stdout
 x_connected_monitors () {
-    xrandr | awk '$2 == "connected" { print $1 }'
+	xrandr | awk '$2 == "connected" { print $1 }'
 }
 
 ###############################################################################
@@ -234,7 +245,7 @@ eval_and_log bspc wm --adopt-orphans
 eval_and_log pkill polybar
 
 for line in $(x_connected_monitors); do
-    eval_and_log polybar $line &
+	eval_and_log polybar $line &
 done
 
 ###############################################################################
@@ -248,9 +259,10 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # start other programs
 ###############################################################################
 
-# start hotkey daemon
-pkill sxhkd
-eval_and_log sxhkd &
+# start hotkey daemon (or just reload config)
+pgrep sxkhd \
+	&& pkill -USR1 -x sxhkd \
+	|| eval_and_log sxhkd &
 
 # start compositor
 eval_and_log compton -b &
@@ -276,3 +288,5 @@ bspc config window_gap           2
 bspc config split_ratio          0.52
 bspc config borderless_monocle   true
 bspc config gapless_monocle      true
+
+# vi:noet:noai:ts=3:sw=0:sts=0
