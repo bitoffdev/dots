@@ -19,12 +19,17 @@ from gi.repository import Gtk, Gdk, GObject
 ###############################################################################
 logging.basicConfig(level=logging.INFO)
 
-FIREFOX_BIN = "/opt/firefox/firefox"
+FIREFOX_BIN = "/opt/firefox/firefox-bin"
 FIREFOX_CONFIG = os.path.expanduser("~/.mozilla/firefox")
+
+# the name of the profile to list first
+DEFAULT_PROFILE_NAME = 'default'
 
 ###############################################################################
 # Main
 ###############################################################################
+
+PROFILE_NAME_KEY = 'name'
 
 class Firefox:
 
@@ -35,6 +40,8 @@ class Firefox:
         config = configparser.ConfigParser()
         config.read(os.path.join(FIREFOX_CONFIG, "profiles.ini"))
         profiles = [ dict(config[key]) for key in config if 'profile' in key.lower() ]
+        # move the default profile to the lowest index
+        profiles = sorted(profiles, key=lambda p: 0 if p[PROFILE_NAME_KEY] == DEFAULT_PROFILE_NAME else 1)
         logging.info("Found profiles: {}".format(profiles))
         return profiles
 
@@ -91,8 +98,8 @@ class ButtonWindow(Gtk.Window):
 
         # profile buttons
         for profile in self.fox.list_profiles():
-            button = Gtk.Button.new_with_label(profile["name"])
-            button.connect("clicked", lambda button, profile=profile: self.on_profile(profile["name"]))
+            button = Gtk.Button.new_with_label(profile[PROFILE_NAME_KEY])
+            button.connect("clicked", lambda button, profile=profile: self.on_profile(profile[PROFILE_NAME_KEY]))
             vbox.pack_start(button, True, True, 0)
 
         # copy button
