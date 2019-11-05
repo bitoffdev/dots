@@ -154,3 +154,8 @@ XF86AudioLowerVolume
 
 XF86AudioMute
 	amixer -q set Master toggle
+
+XF86AudioMicMute
+	amixer set Capture toggle
+
+# vi:noet:ts=8:sw=0:sts=0
