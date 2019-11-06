@@ -237,7 +237,7 @@ for i in $(seq 1 $monitor_count); do
 done
 
 # adopt any windows that somehow got orphaned
-eval_and_log bspc wm --adopt-orphans
+# eval_and_log bspc wm --adopt-orphans
 
 ###############################################################################
 # BAR
@@ -260,9 +260,11 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 ###############################################################################
 
 # start hotkey daemon (or just reload config)
-pgrep sxkhd \
-	&& pkill -USR1 -x sxhkd \
-	|| eval_and_log sxhkd &
+if pgrep sxhkd > /dev/null; then
+	eval_and_log pkill -USR1 -x sxhkd
+else
+	eval_and_log sxhkd &
+fi
 
 # start compositor
 eval_and_log compton -b &
