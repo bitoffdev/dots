@@ -1,6 +1,10 @@
 # WATCH OUT FOR RACE CONDITIONS WITH XCB:
 #   https://github.com/baskerville/sxhkd/issues/59
 
+# show sxhkd sbindings
+super + apostrophe
+	rofi_sxhkd_bindings
+
 #
 # wm independent hotkeys
 #
@@ -16,7 +20,7 @@ super + d
 
 # make sxhkd reload its configuration files:
 super + Escape
-	pkill -USR1 -x sxhkd
+	pkill -USR1 -x sxhkd && notify-send 'sxhkd config was reloaded'
 
 # lock the screen
 super + slash
@@ -45,6 +49,18 @@ super + y
 # swap the current node and the biggest node
 super + g
 	bspc node -s biggest
+
+# create receptacle where focused window is located
+super + r
+	bspc node --insert-receptacle
+
+# close receptacle
+super + shift + r
+	sh -c 'bspc query --nodes --node any.leaf.\!window | xargs -I_ bspc node _ --kill'
+
+# circulate nodes
+super + c
+	bspc node $(bspc query --nodes --node any.ancestor_of) --circulate forward
 
 #
 # state/flags

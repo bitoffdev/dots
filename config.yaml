@@ -116,6 +116,9 @@ dotfiles:
   f_rofi_run:
     dst: ~/.local/bin/rofi_run
     src: local/bin/rofi_run
+  f_rofi_sxhkd_bindings:
+    dst: ~/.local/bin/rofi_sxhkd_bindings
+    src: local/bin/rofi_sxhkd_bindings
   f_shellex:
     dst: ~/.shellex/shellex
     src: shellex
@@ -178,6 +181,7 @@ profiles:
     - f_git_sherlock
     - f_xinitrc
     - f_resize_font
+    - f_rofi_sxhkd_bindings
     - f_sxhkdrc
     - f_config
     - f_dunstrc
