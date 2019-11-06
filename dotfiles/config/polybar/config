@@ -88,7 +88,7 @@ font-1 = unifont:fontformat=truetype:size=8:antialias=false;0
 font-2 = siji:pixelsize=10;1
 font-3 = "Wuncon Siji:pixelsize=10;1"
 
-modules-left = bspwm
+modules-left = bspwm xwindow
 # modules-center = mpd
 # modules-right = filesystem alsa pulseaudio xkeyboard memory cpu wlan eth battery temperature date powermenu
 modules-right = filesystem xbacklight alsa pulseaudio xkeyboard memory cpu wlan eth battery battery1 temperature date powermenu
